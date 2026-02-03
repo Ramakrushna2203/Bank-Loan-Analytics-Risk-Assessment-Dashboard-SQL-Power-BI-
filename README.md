@@ -1,126 +1,257 @@
-# 🏦 Bank Loan Analytics & Risk Assessment Dashboard
+# 🏦 Bank Loan Analytics & Risk Assessment Project
 
 ## 📌 Overview
-This project analyzes bank loan data using SQL and Power BI to evaluate portfolio performance, credit risk, and borrower behavior. It converts raw transactional records into meaningful KPIs, reports, and dashboards that support data-driven lending, monitoring, and risk management decisions.
+End-to-end Loan Portfolio Analytics project using **SQL + Power BI + Excel** to monitor loan performance, funding, repayments, and credit risk.
+
+The project transforms raw banking data into **KPIs, SQL reports, and interactive dashboards** to help stakeholders track:
+- Applications
+- Funded Amount
+- Collections
+- Interest trends
+- Good vs Bad loans
+- Risk segmentation
 
 ---
 
-## 🎯 Objectives
-- Track loan applications and funding trends  
-- Monitor repayments and recovery rates  
-- Measure credit quality (Good vs Bad loans)  
-- Analyze interest rate & DTI impact  
-- Segment borrowers by state, term, employment, and purpose  
-- Identify high-risk patterns to reduce defaults  
+# 🛠 Tech Stack
+SQL (MySQL)  
+Power BI (Power Query + DAX)  
+Excel  
+Data Cleaning  
+Dashboarding  
 
 ---
 
-## 🛠 Tech Stack
-- SQL (MySQL / SQL Server)  
-- Power BI  
-- MS Excel  
-- Data Modeling & Aggregation  
+# 🔄 Steps Involved
+
+1. Data Cleaning  
+   - Removed nulls & inconsistencies  
+   - Standardized categories  
+   - Fixed formats  
+
+2. Datatype Conversion  
+   - Converted string → DATE  
+   - Validated numeric fields  
+
+3. SQL Analysis  
+   - KPIs  
+   - Aggregations  
+   - MoM growth  
+   - Risk segmentation  
+
+4. Power BI  
+   - Power Query transformations  
+   - DAX measures  
+   - Data modeling  
+   - Interactive dashboards  
+
+5. Insights & Reporting  
 
 ---
 
-## 📂 Repository Structure
-
----
-
-## 📊 KPIs Implemented
-- Total Loan Applications  
-- MTD / PMTD Applications  
-- Total Funded Amount  
-- Total Amount Received  
-- Average Interest Rate  
-- Average Debt-to-Income (DTI)  
-- Good Loan % & Bad Loan %  
-- Loan Status Breakdown  
-
----
-
-## 🧠 Analysis Modules
-
-### Summary Dashboard
-- Applications count  
-- Funded capital  
-- Collections  
-- Interest & DTI metrics  
-
-### Loan Quality
-- Good Loans → Fully Paid, Current  
-- Bad Loans → Charged Off  
-- Default percentage tracking  
-
-### Segmentation
-- Month-wise trends  
-- State-wise distribution  
-- Loan term  
-- Employment length  
-- Purpose  
-- Home ownership  
-
----
-
-## 🗂 Dataset Columns Description
+# 📂 Dataset Column Description
 
 | Column | Description |
-|--------|-------------|
-| id | Unique loan identifier |
-| address_state | Borrower state location |
-| application_type | Individual/Joint application type |
-| emp_length | Employment experience |
-| emp_title | Job title or employer |
-| grade | Overall credit grade (A–G) |
-| home_ownership | Rent/Own/Mortgage status |
-| issue_date | Loan issued date |
-| last_credit_pull_date | Last credit bureau check |
-| last_payment_date | Most recent payment date |
-| loan_status | Current status of loan |
-| next_payment_date | Upcoming payment date |
-| member_id | Customer/member identifier |
+|-------|-------------|
+| id | Unique loan ID |
+| address_state | Borrower state |
+| application_type | Individual/Joint |
+| emp_length | Employment tenure |
+| emp_title | Employer name |
+| grade | Loan credit grade |
+| home_ownership | Rent/Own/Mortgage |
+| issue_date | Loan issue date |
+| last_credit_pull_date | Last bureau check |
+| last_payment_date | Last paid date |
+| next_payment_date | Upcoming payment |
+| loan_status | Fully Paid / Current / Charged Off |
+| member_id | Borrower ID |
 | purpose | Loan purpose |
-| sub_grade | Detailed risk classification |
-| term | Loan tenure (36/60 months) |
-| verification_status | Income verification status |
-| annual_income | Borrower yearly income |
-| int_rate | Interest rate charged |
-| installment | Monthly EMI amount |
+| sub_grade | Risk sub category |
+| term | Loan tenure |
+| verification_status | Income verified or not |
+| annual_income | Income of borrower |
+| int_rate | Interest rate |
+| installment | EMI amount |
 | dti | Debt-to-Income ratio |
-| loan_amount | Loan funded amount |
-| total_acc | Total credit accounts |
-| total_payment | Total amount received |
+| loan_amount | Loan funded |
+| total_acc | Total accounts |
+| total_payment | Amount collected |
 
 ---
 
-## 📈 Key Insights
-- Majority of portfolio consists of good loans with consistent repayments  
-- Charged-off loans reduce recovery efficiency  
-- High DTI borrowers show greater default risk  
-- Longer tenure loans carry increased risk exposure  
-- Certain states and purposes have higher delinquency trends  
-- Monthly analysis reveals seasonality in applications  
+# 🧠 Complete SQL Code (All Queries)
+
+```sql
+SELECT * FROM bank_loan_data;
+DESC bank_loan_data;
+
+SET SQL_SAFE_UPDATES = 0;
+
+UPDATE bank_loan_data SET issue_date = STR_TO_DATE(issue_date,'%d-%m-%Y');
+ALTER TABLE bank_loan_data MODIFY issue_date DATE;
+
+UPDATE bank_loan_data SET last_credit_pull_date = STR_TO_DATE(last_credit_pull_date,'%d-%m-%Y');
+ALTER TABLE bank_loan_data MODIFY last_credit_pull_date DATE;
+
+UPDATE bank_loan_data SET last_payment_date = STR_TO_DATE(last_payment_date,'%d-%m-%Y');
+ALTER TABLE bank_loan_data MODIFY last_payment_date DATE;
+
+UPDATE bank_loan_data SET next_payment_date = STR_TO_DATE(next_payment_date,'%d-%m-%Y');
+ALTER TABLE bank_loan_data MODIFY next_payment_date DATE;
+
+-- TOTAL APPLICATIONS
+SELECT COUNT(*) AS total_loan_application FROM bank_loan_data;
+
+-- MTD APPLICATIONS
+SELECT COUNT(id)
+FROM bank_loan_data
+WHERE MONTH(issue_date)=12 AND YEAR(issue_date)=2021;
+
+-- MOM GROWTH
+SELECT
+COUNT(CASE WHEN issue_date >= '2021-12-01' AND issue_date < '2022-01-01' THEN 1 END) AS MTD_Total,
+COUNT(CASE WHEN issue_date >= '2021-11-01' AND issue_date < '2021-12-01' THEN 1 END) AS PMTD_Total,
+ROUND((
+COUNT(CASE WHEN issue_date >= '2021-12-01' AND issue_date < '2022-01-01' THEN 1 END) -
+COUNT(CASE WHEN issue_date >= '2021-11-01' AND issue_date < '2021-12-01' THEN 1 END))
+/ NULLIF(COUNT(CASE WHEN issue_date >= '2021-11-01' AND issue_date < '2021-12-01' THEN 1 END),0)*100,2) AS MoM_Growth_Percent
+FROM bank_loan_data;
+
+-- TOTAL FUNDED
+SELECT SUM(loan_amount) AS Total_Funded_Amount FROM bank_loan_data;
+
+SELECT SUM(loan_amount)
+FROM bank_loan_data
+WHERE MONTH(issue_date)=12 AND YEAR(issue_date)=2021;
+
+SELECT SUM(loan_amount)
+FROM bank_loan_data
+WHERE MONTH(issue_date)=11 AND YEAR(issue_date)=2021;
+
+-- TOTAL RECEIVED
+SELECT SUM(total_payment) FROM bank_loan_data;
+
+SELECT SUM(total_payment)
+FROM bank_loan_data
+WHERE MONTH(issue_date)=12 AND YEAR(issue_date)=2021;
+
+SELECT SUM(total_payment)
+FROM bank_loan_data
+WHERE MONTH(issue_date)=11 AND YEAR(issue_date)=2021;
+
+-- AVG INTEREST
+SELECT AVG(int_rate)*100 FROM bank_loan_data;
+
+-- AVG DTI
+SELECT AVG(dti)*100 FROM bank_loan_data;
+
+-- GOOD LOANS
+SELECT COUNT(id)
+FROM bank_loan_data
+WHERE loan_status IN ('Fully Paid','Current');
+
+SELECT SUM(loan_amount)
+FROM bank_loan_data
+WHERE loan_status IN ('Fully Paid','Current');
+
+SELECT SUM(total_payment)
+FROM bank_loan_data
+WHERE loan_status IN ('Fully Paid','Current');
+
+-- BAD LOANS
+SELECT COUNT(id)
+FROM bank_loan_data
+WHERE loan_status='Charged Off';
+
+SELECT SUM(loan_amount)
+FROM bank_loan_data
+WHERE loan_status='Charged Off';
+
+SELECT SUM(total_payment)
+FROM bank_loan_data
+WHERE loan_status='Charged Off';
+
+-- LOAN STATUS SUMMARY
+SELECT
+loan_status,
+COUNT(id),
+SUM(total_payment),
+SUM(loan_amount),
+AVG(int_rate*100),
+AVG(dti*100)
+FROM bank_loan_data
+GROUP BY loan_status;
+
+-- MONTHWISE
+SELECT
+MONTH(issue_date),
+COUNT(id),
+SUM(loan_amount),
+SUM(total_payment)
+FROM bank_loan_data
+GROUP BY MONTH(issue_date);
+
+-- STATEWISE
+SELECT address_state,
+COUNT(id),
+SUM(loan_amount),
+SUM(total_payment)
+FROM bank_loan_data
+GROUP BY address_state;
+
+-- TERM
+SELECT term,
+COUNT(id),
+SUM(loan_amount),
+SUM(total_payment)
+FROM bank_loan_data
+GROUP BY term;
+
+-- EMP LENGTH
+SELECT emp_length,
+COUNT(id),
+SUM(loan_amount),
+SUM(total_payment)
+FROM bank_loan_data
+GROUP BY emp_length;
+
+-- PURPOSE
+SELECT purpose,
+COUNT(id),
+SUM(loan_amount),
+SUM(total_payment)
+FROM bank_loan_data
+GROUP BY purpose;
+
+-- HOME OWNERSHIP
+SELECT home_ownership,
+COUNT(id),
+SUM(loan_amount),
+SUM(total_payment)
+FROM bank_loan_data
+GROUP BY home_ownership;
+```
 
 ---
 
-## 🚀 How to Use
-1. Run SQL queries inside `/SQL_Queries/`  
-2. Load outputs into Power BI  
-3. Connect visuals to KPIs  
-4. Apply filters (Grade, State, Term, etc.)  
-5. Monitor portfolio performance  
+# 📈 Insights
+- Majority loans are fully paid
+- Charged-off loans impact recovery rate
+- Higher DTI increases default probability
+- Longer tenure loans show higher risk
+- State & purpose affect loan behavior
 
 ---
 
-## 📌 Outcome
-Delivered a complete loan analytics solution that improves:
-- Credit risk monitoring  
-- Portfolio health tracking  
-- Strategic lending decisions  
-- Business intelligence reporting  
+# 🚀 Business Impact
+✔ Portfolio monitoring  
+✔ Risk reduction  
+✔ Better lending decisions  
+✔ Automated reporting  
 
 ---
 
-## 👤 Author
-RAMAKRUSHNA NAYAK  
-Data Analyst | SQL | Power BI | Python | Excel  
+# 👤 Author
+Data Analyst | SQL | Power BI | Python | Excel
+ 
